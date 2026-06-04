@@ -12,121 +12,237 @@
             --accent-green: #34c759;
             --text-main: #ffffff;
             --text-muted: #8e8e93;
+            --border-color: #2c2c2e;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-main);
             margin: 0;
-            padding: 20px;
+            padding: 15px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            min-height: 90vh;
         }
 
         .container {
             width: 100%;
-            max-width: 450px;
-            text-align: center;
+            max-width: 480px;
             background: var(--card-bg);
-            padding: 25px;
+            padding: 20px;
             border-radius: 16px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.3);
             box-sizing: border-box;
+            margin-bottom: 30px;
         }
 
         h1 {
-            font-size: 24px;
-            margin-bottom: 5px;
+            font-size: 22px;
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 20px;
             font-weight: 600;
         }
 
-        .subtitle {
-            color: var(--text-muted);
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
             font-size: 14px;
-            margin-bottom: 25px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            background: #2c2c2e;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: white;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        .radio-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        .radio-tile {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            background: #2c2c2e;
+            border: 2px solid transparent;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+        }
+
+        input[type="radio"]:checked + .radio-tile {
+            border-color: var(--accent-blue);
+            background: rgba(0, 122, 255, 0.1);
+            color: var(--accent-blue);
+        }
+
+        .scan-section {
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+            margin-top: 25px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: var(--accent-blue);
+            text-transform: uppercase;
         }
 
         .btn {
             display: block;
             width: 100%;
-            padding: 16px;
+            padding: 14px;
             border: none;
-            border-radius: 12px;
-            font-size: 16px;
+            border-radius: 10px;
+            font-size: 15px;
             font-weight: 600;
             cursor: pointer;
-            transition: background 0.2s, transform 0.1s;
             box-sizing: border-box;
             text-decoration: none;
+            text-align: center;
         }
 
         .btn-primary {
-            background-color: var(--accent-blue);
+            background-color: #2c2c2e;
             color: white;
-            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
         }
 
         .btn-success {
             background-color: var(--accent-green);
             color: white;
             display: none;
-            margin-top: 15px;
+            margin-top: 12px;
         }
 
-        .btn:active {
-            transform: scale(0.98);
-        }
-
-        #preview {
+        .preview-box {
             max-width: 100%;
-            max-height: 300px;
+            max-height: 220px;
             object-fit: contain;
             border-radius: 8px;
-            margin-top: 20px;
+            margin-top: 12px;
             border: 1px solid #333;
             display: none;
         }
 
         .file-info {
             display: none;
-            margin-top: 10px;
-            font-size: 14px;
-            color: var(--accent-green);
-            font-weight: 500;
+            margin-top: 8px;
+            font-size: 13px;
+            color: var(--text-muted);
+            text-align: left;
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>Scanner ID</h1>
-        <p class="subtitle">Acquisizione ottimizzata per CIE e Tessera Sanitaria</p>
+        <h1>Scanner ID Pro</h1>
 
-        <!-- Input nascosto che invoca la fotocamera nativa dell'iPhone -->
-        <input type="file" accept="image/*" capture="environment" id="camera-input" style="display:none;">
-        
-        <button class="btn btn-primary" onclick="document.getElementById('camera-input').click()">
-            Scatta Foto Documento
-        </button>
+        <div class="form-group">
+            <label for="name-input">Cognome o Nome Soggetto</label>
+            <input type="text" id="name-input" placeholder="Es. PIPPO" autocomplete="off" autocapitalize="characters">
+        </div>
 
-        <img id="preview" alt="Anteprima Documento">
-        <div id="file-info" class="file-info"></div>
+        <div class="form-group">
+            <label>Tipo Documento</label>
+            <div class="radio-container">
+                <label style="flex:1; text-transform:none; margin:0;">
+                    <input type="radio" name="doc-type" value="CIE" checked onchange="updateFilenames()">
+                    <div class="radio-tile">CIE</div>
+                </label>
+                <label style="flex:1; text-transform:none; margin:0;">
+                    <input type="radio" name="doc-type" value="TS" onchange="updateFilenames()">
+                    <div class="radio-tile">Tessera Sanitaria (TS)</div>
+                </label>
+            </div>
+        </div>
 
-        <a id="download-link" class="btn btn-success">Salva in Galleria / File</a>
+        <div class="scan-section">
+            <div class="section-title">1. Lato Fronte</div>
+            <input type="file" accept="image/*" capture="environment" id="input-front" style="display:none;">
+            <button class="btn btn-primary" onclick="document.getElementById('input-front').click()">
+                Scatta Foto Fronte
+            </button>
+            <img id="preview-front" class="preview-box" alt="Anteprima Fronte">
+            <div id="info-front" class="file-info"></div>
+            <a id="download-front" class="btn btn-success">Salva File Fronte</a>
+        </div>
+
+        <div class="scan-section">
+            <div class="section-title">2. Lato Retro</div>
+            <input type="file" accept="image/*" capture="environment" id="input-back" style="display:none;">
+            <button class="btn btn-primary" onclick="document.getElementById('input-back').click()">
+                Scatta Foto Retro
+            </button>
+            <img id="preview-back" class="preview-box" alt="Anteprima Retro">
+            <div id="info-back" class="file-info"></div>
+            <a id="download-back" class="btn btn-success">Salva File Retro</a>
+        </div>
     </div>
 
     <script>
-        const input = document.getElementById('camera-input');
-        const preview = document.getElementById('preview');
-        const fileInfo = document.getElementById('file-info');
-        const downloadLink = document.getElementById('download-link');
+        // Gestione degli oggetti Blob attivi in memoria
+        let blobs = { FRONT: null, BACK: null };
+        let blobUrls = { FRONT: null, BACK: null };
 
-        input.addEventListener('change', function(e) {
-            const file = e.target.files[0];
+        // Ripulisce il testo per renderlo un nome di file valido ed elegante
+        function getSanitizedName() {
+            const rawName = document.getElementById('name-input').value.trim();
+            if (!rawName) return "DOCUMENTO";
+            // Trasforma in maiuscolo e sostituisce spazi o caratteri speciali con l'underscore
+            return rawName.toUpperCase().replace(/[^A-Z0-9]/g, '_');
+        }
+
+        function getDocType() {
+            return document.querySelector('input[name="doc-type"]:checked').value;
+        }
+
+        // Forza l'aggiornamento dinamico dei nomi dei file pronti al download
+        function updateFilenames() {
+            const name = getSanitizedName();
+            const type = getDocType();
+            
+            if (blobs.FRONT) {
+                document.getElementById('download-front').download = `${name}_${type}_FRONT.jpg`;
+            }
+            if (blobs.BACK) {
+                document.getElementById('download-back').download = `${name}_${type}_BACK.jpg`;
+            }
+        }
+
+        // Ascolta l'input del testo per aggiornare i nomi in tempo reale mentre scrivi
+        document.getElementById('name-input').addEventListener('input', updateFilenames);
+
+        // Funzione core di elaborazione dell'immagine
+        function processImage(file, side) {
             if (!file) return;
 
             const reader = new FileReader();
@@ -137,7 +253,6 @@
                     let width = img.width;
                     let height = img.height;
 
-                    // Ridimensionamento sul lato lungo a 1920px (perfetto per nitidezza e peso)
                     const max_size = 1920;
                     if (width > height) {
                         if (width > max_size) { height *= max_size / width; width = max_size; }
@@ -147,44 +262,49 @@
 
                     canvas.width = width;
                     canvas.height = height;
-                    
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
 
-                    // Elaborazione nativa in JPEG con compressione all'80%
                     canvas.toBlob(function(blob) {
                         if (!blob) return;
 
-                        // Rilascia la memoria del vecchio URL se esistente
-                        if (preview.src.startsWith('blob:')) {
-                            URL.revokeObjectURL(preview.src);
+                        const sideLower = side.toLowerCase();
+                        
+                        // Garbage collection dei vecchi blob per non saturare Safari
+                        if (blobUrls[side]) {
+                            URL.revokeObjectURL(blobUrls[side]);
                         }
 
-                        const blobUrl = URL.createObjectURL(blob);
-                        
-                        // Aggiorna l'anteprima
-                        preview.src = blobUrl;
+                        blobs[side] = blob;
+                        blobUrls[side] = URL.createObjectURL(blob);
+
+                        // Aggiorna UI specifica del lato (Front o Back)
+                        const preview = document.getElementById(`preview-${sideLower}`);
+                        const info = document.getElementById(`info-${sideLower}`);
+                        const download = document.getElementById(`download-${sideLower}`);
+
+                        preview.src = blobUrls[side];
                         preview.style.display = 'inline-block';
 
-                        // Mostra informazioni sul file generato
                         const sizeInKB = (blob.size / 1024).toFixed(0);
-                        fileInfo.textContent = `Pronto! Dimensione: ${sizeInKB} KB (Ottimizzato)`;
-                        fileInfo.style.display = 'block';
+                        info.innerHTML = `Nome file: <strong>${getSanitizedName()}_${getDocType()}_${side}.jpg</strong><br>Dimensione: ${sizeInKB} KB`;
+                        info.style.display = 'block';
 
-                        // Configura il pulsante di download locale
-                        const now = new Date();
-                        const dateStr = now.toISOString().slice(0,10);
+                        download.href = blobUrls[side];
+                        download.style.display = 'block';
                         
-                        downloadLink.href = blobUrl;
-                        downloadLink.download = `ScannerID_${dateStr}.jpg`;
-                        downloadLink.style.display = 'block';
+                        updateFilenames();
 
                     }, 'image/jpeg', 0.8);
                 }
                 img.src = event.target.result;
             }
             reader.readAsDataURL(file);
-        });
+        }
+
+        // Event Listeners per i due input fotocamera
+        document.getElementById('input-front').addEventListener('change', (e) => processImage(e.target.files[0], 'FRONT'));
+        document.getElementById('input-back').addEventListener('change', (e) => processImage(e.target.files[0], 'BACK'));
     </script>
 </body>
 </html>
