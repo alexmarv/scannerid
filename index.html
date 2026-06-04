@@ -3,13 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
     <title>Scanner ID</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#121212">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'><rect width='192' height='192' rx='42' fill='%23007aff'/><rect x='36' y='61' width='120' height='70' rx='8' fill='none' stroke='white' stroke-width='6'/><circle cx='60' cy='96' r='10' fill='white'/><line x1='85' y1='88' x2='130' y2='88' stroke='white' stroke-width='5' stroke-linecap='round'/><line x1='85' y1='104' x2='115' y2='104' stroke='white' stroke-width='5' stroke-linecap='round'/></svg>">
+
     <style>
         :root {
             --bg-color: #121212;
             --card-bg: #1e1e1e;
             --accent-blue: #007aff;
             --accent-green: #34c759;
+            --accent-purple: #af52de;
             --text-main: #ffffff;
             --text-muted: #8e8e93;
             --border-color: #2c2c2e;
@@ -35,136 +44,31 @@
             box-shadow: 0 8px 24px rgba(0,0,0,0.3);
             box-sizing: border-box;
             margin-bottom: 30px;
+            margin-top: env(safe-area-inset-top, 10px);
         }
 
-        h1 {
-            font-size: 22px;
-            text-align: center;
-            margin-top: 0;
-            margin-bottom: 20px;
-            font-weight: 600;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            font-size: 14px;
-            color: var(--text-muted);
-            margin-bottom: 8px;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        input[type="text"] {
-            width: 100%;
-            padding: 12px;
-            background: #2c2c2e;
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            color: white;
-            font-size: 16px;
-            box-sizing: border-box;
-        }
-
-        .radio-container {
-            display: flex;
-            gap: 10px;
-        }
-
-        .radio-tile {
-            flex: 1;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 12px;
-            background: #2c2c2e;
-            border: 2px solid transparent;
-            border-radius: 10px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 15px;
-        }
-
-        input[type="radio"] {
-            position: absolute;
-            opacity: 0;
-        }
-
-        input[type="radio"]:checked + .radio-tile {
-            border-color: var(--accent-blue);
-            background: rgba(0, 122, 255, 0.1);
-            color: var(--accent-blue);
-        }
-
-        .scan-section {
-            border-top: 1px solid var(--border-color);
-            padding-top: 20px;
-            margin-top: 25px;
-        }
-
-        .section-title {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 12px;
-            color: var(--accent-blue);
-            text-transform: uppercase;
-        }
-
-        .btn {
-            display: block;
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 10px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            box-sizing: border-box;
-            text-decoration: none;
-            text-align: center;
-        }
-
-        .btn-primary {
-            background-color: #2c2c2e;
-            color: white;
-            border: 1px solid var(--border-color);
-        }
-
-        .btn-success {
-            background-color: var(--accent-green);
-            color: white;
-            display: none;
-            margin-top: 12px;
-        }
-
-        .preview-box {
-            max-width: 100%;
-            max-height: 220px;
-            object-fit: contain;
-            border-radius: 8px;
-            margin-top: 12px;
-            border: 1px solid #333;
-            display: none;
-        }
-
-        .file-info {
-            display: none;
-            margin-top: 8px;
-            font-size: 13px;
-            color: var(--text-muted);
-            text-align: left;
-        }
+        h1 { font-size: 22px; text-align: center; margin-top: 0; margin-bottom: 20px; font-weight: 600; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-size: 14px; color: var(--text-muted); margin-bottom: 8px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+        input[type="text"] { width: 100%; padding: 12px; background: #2c2c2e; border: 1px solid var(--border-color); border-radius: 10px; color: white; font-size: 16px; box-sizing: border-box; }
+        .radio-container { display: flex; gap: 10px; }
+        .radio-tile { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; padding: 12px; background: #2c2c2e; border: 2px solid transparent; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 15px; }
+        input[type="radio"] { position: absolute; opacity: 0; }
+        input[type="radio"]:checked + .radio-tile { border-color: var(--accent-blue); background: rgba(0, 122, 255, 0.1); color: var(--accent-blue); }
+        .scan-section { border-top: 1px solid var(--border-color); padding-top: 20px; margin-top: 25px; }
+        .section-title { font-size: 16px; font-weight: 600; margin-bottom: 12px; color: var(--accent-blue); text-transform: uppercase; }
+        .btn { display: block; width: 100%; padding: 14px; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; box-sizing: border-box; text-decoration: none; text-align: center; }
+        .btn-primary { background-color: #2c2c2e; color: white; border: 1px solid var(--border-color); }
+        .btn-success { background-color: var(--accent-green); color: white; display: none; margin-top: 12px; }
+        .btn-union { background-color: var(--accent-purple); color: white; display: none; margin-top: 25px; box-shadow: 0 4px 12px rgba(175, 82, 222, 0.3); }
+        .preview-box { max-width: 100%; max-height: 180px; object-fit: contain; border-radius: 8px; margin-top: 12px; border: 1px solid #333; display: none; }
+        .file-info { display: none; margin-top: 8px; font-size: 13px; color: var(--text-muted); text-align: left; }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <h1>Scanner ID Pro</h1>
+        <h1>Scanner ID PWA</h1>
 
         <div class="form-group">
             <label for="name-input">Cognome o Nome Soggetto</label>
@@ -180,7 +84,7 @@
                 </label>
                 <label style="flex:1; text-transform:none; margin:0;">
                     <input type="radio" name="doc-type" value="TS" onchange="updateFilenames()">
-                    <div class="radio-tile">Tessera Sanitaria (TS)</div>
+                    <div class="radio-tile">TS (Sanitaria)</div>
                 </label>
             </div>
         </div>
@@ -188,113 +92,87 @@
         <div class="scan-section">
             <div class="section-title">1. Lato Fronte</div>
             <input type="file" accept="image/*" capture="environment" id="input-front" style="display:none;">
-            <button class="btn btn-primary" onclick="document.getElementById('input-front').click()">
-                Scatta Foto Fronte
-            </button>
+            <button class="btn btn-primary" onclick="document.getElementById('input-front').click()">Scatta Foto Fronte</button>
             <img id="preview-front" class="preview-box" alt="Anteprima Fronte">
             <div id="info-front" class="file-info"></div>
-            <a id="download-front" class="btn btn-success">Salva File Fronte</a>
+            <a id="download-front" class="btn btn-success">Salva Solo Fronte</a>
         </div>
 
         <div class="scan-section">
             <div class="section-title">2. Lato Retro</div>
             <input type="file" accept="image/*" capture="environment" id="input-back" style="display:none;">
-            <button class="btn btn-primary" onclick="document.getElementById('input-back').click()">
-                Scatta Foto Retro
-            </button>
+            <button class="btn btn-primary" onclick="document.getElementById('input-back').click()">Scatta Foto Retro</button>
             <img id="preview-back" class="preview-box" alt="Anteprima Retro">
             <div id="info-back" class="file-info"></div>
-            <a id="download-back" class="btn btn-success">Salva File Retro</a>
+            <a id="download-back" class="btn btn-success">Salva Solo Retro</a>
         </div>
+
+        <button id="btn-combine" class="btn btn-union" onclick="downloadCombined()">
+            Scarica Fronte + Retro Uniti
+        </button>
     </div>
 
     <script>
-        // Gestione degli oggetti Blob attivi in memoria
         let blobs = { FRONT: null, BACK: null };
         let blobUrls = { FRONT: null, BACK: null };
 
-        // Ripulisce il testo per renderlo un nome di file valido ed elegante
         function getSanitizedName() {
             const rawName = document.getElementById('name-input').value.trim();
-            if (!rawName) return "DOCUMENTO";
-            // Trasforma in maiuscolo e sostituisce spazi o caratteri speciali con l'underscore
-            return rawName.toUpperCase().replace(/[^A-Z0-9]/g, '_');
+            return rawName ? rawName.toUpperCase().replace(/[^A-Z0-9]/g, '_') : "DOCUMENTO";
         }
 
         function getDocType() {
             return document.querySelector('input[name="doc-type"]:checked').value;
         }
 
-        // Forza l'aggiornamento dinamico dei nomi dei file pronti al download
         function updateFilenames() {
             const name = getSanitizedName();
             const type = getDocType();
-            
-            if (blobs.FRONT) {
-                document.getElementById('download-front').download = `${name}_${type}_FRONT.jpg`;
-            }
-            if (blobs.BACK) {
-                document.getElementById('download-back').download = `${name}_${type}_BACK.jpg`;
-            }
+            if (blobs.FRONT) document.getElementById('download-front').download = `${name}_${type}_FRONT.jpg`;
+            if (blobs.BACK) document.getElementById('download-back').download = `${name}_${type}_BACK.jpg`;
         }
 
-        // Ascolta l'input del testo per aggiornare i nomi in tempo reale mentre scrivi
         document.getElementById('name-input').addEventListener('input', updateFilenames);
 
-        // Funzione core di elaborazione dell'immagine
         function processImage(file, side) {
             if (!file) return;
-
             const reader = new FileReader();
             reader.onload = function(event) {
                 const img = new Image();
                 img.onload = function() {
                     const canvas = document.createElement('canvas');
-                    let width = img.width;
-                    let height = img.height;
-
+                    let width = img.width; let height = img.height;
                     const max_size = 1920;
                     if (width > height) {
                         if (width > max_size) { height *= max_size / width; width = max_size; }
                     } else {
                         if (height > max_size) { width *= max_size / height; height = max_size; }
                     }
-
-                    canvas.width = width;
-                    canvas.height = height;
+                    canvas.width = width; canvas.height = height;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
 
                     canvas.toBlob(function(blob) {
                         if (!blob) return;
-
-                        const sideLower = side.toLowerCase();
-                        
-                        // Garbage collection dei vecchi blob per non saturare Safari
-                        if (blobUrls[side]) {
-                            URL.revokeObjectURL(blobUrls[side]);
-                        }
+                        if (blobUrls[side]) URL.revokeObjectURL(blobUrls[side]);
 
                         blobs[side] = blob;
                         blobUrls[side] = URL.createObjectURL(blob);
 
-                        // Aggiorna UI specifica del lato (Front o Back)
-                        const preview = document.getElementById(`preview-${sideLower}`);
+                        const sideLower = side.toLowerCase();
+                        document.getElementById(`preview-${sideLower}`).src = blobUrls[side];
+                        document.getElementById(`preview-${sideLower}`).style.display = 'inline-block';
+
                         const info = document.getElementById(`info-${sideLower}`);
-                        const download = document.getElementById(`download-${sideLower}`);
-
-                        preview.src = blobUrls[side];
-                        preview.style.display = 'inline-block';
-
-                        const sizeInKB = (blob.size / 1024).toFixed(0);
-                        info.innerHTML = `Nome file: <strong>${getSanitizedName()}_${getDocType()}_${side}.jpg</strong><br>Dimensione: ${sizeInKB} KB`;
+                        info.innerHTML = `File pronto: <strong>${getSanitizedName()}_${getDocType()}_${side}.jpg</strong> (${(blob.size / 1024).toFixed(0)} KB)`;
                         info.style.display = 'block';
-
-                        download.href = blobUrls[side];
-                        download.style.display = 'block';
+                        document.getElementById(`download-${sideLower}`).style.display = 'block';
                         
+                        // Mostra il pulsantone di unione se entrambi i lati sono stati scattati
+                        if (blobs.FRONT && blobs.BACK) {
+                            document.getElementById('btn-combine').style.display = 'block';
+                        }
                         updateFilenames();
-
                     }, 'image/jpeg', 0.8);
                 }
                 img.src = event.target.result;
@@ -302,9 +180,62 @@
             reader.readAsDataURL(file);
         }
 
-        // Event Listeners per i due input fotocamera
+        // Il motore di fusione delle immagini
+        function downloadCombined() {
+            if (!blobs.FRONT || !blobs.BACK) return;
+
+            const imgFront = new Image();
+            const imgBack = new Image();
+            let loadedCount = 0;
+
+            function merge() {
+                const canvas = document.createElement('canvas');
+                // Larghezza pari alla più grande delle due, altezza pari alla somma + margine di separazione
+                const w = Math.max(imgFront.width, imgBack.width);
+                const gap = 30;
+                const h = imgFront.height + imgBack.height + gap;
+
+                canvas.width = w;
+                canvas.height = h;
+                const ctx = canvas.getContext('2d');
+
+                // Sfondo neutro chiaro per far risaltare il taglio delle tessere
+                ctx.fillStyle = '#f5f5f7';
+                ctx.fillRect(0, 0, w, h);
+
+                // Centra e disegna il Fronte
+                const xFront = (w - imgFront.width) / 2;
+                ctx.drawImage(imgFront, xFront, 0);
+
+                // Centra e disegna il Retro sotto il fronte
+                const xBack = (w - imgBack.width) / 2;
+                ctx.drawImage(imgBack, xBack, imgFront.height + gap);
+
+                canvas.toBlob(function(combinedBlob) {
+                    const url = URL.createObjectURL(combinedBlob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${getSanitizedName()}_${getDocType()}_FRONTE_RETRO.jpg`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    setTimeout(() => URL.revokeObjectURL(url), 200);
+                }, 'image/jpeg', 0.85);
+            }
+
+            imgFront.onload = () => { loadedCount++; if(loadedCount === 2) merge(); };
+            imgBack.onload = () => { loadedCount++; if(loadedCount === 2) merge(); };
+            imgFront.src = blobUrls.FRONT;
+            imgBack.src = blobUrls.BACK;
+        }
+
         document.getElementById('input-front').addEventListener('change', (e) => processImage(e.target.files[0], 'FRONT'));
         document.getElementById('input-back').addEventListener('change', (e) => processImage(e.target.files[0], 'BACK'));
+
+        // Registrazione Service Worker per il funzionamento Offline
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW error:', err));
+        }
     </script>
 </body>
 </html>
