@@ -12,6 +12,9 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'><rect width='192' height='192' rx='42' fill='%23007aff'/><rect x='36' y='61' width='120' height='70' rx='8' fill='none' stroke='white' stroke-width='6'/><circle cx='60' cy='96' r='10' fill='white'/><line x1='85' y1='88' x2='130' y2='88' stroke='white' stroke-width='5' stroke-linecap='round'/><line x1='85' y1='104' x2='115' y2='104' stroke='white' stroke-width='5' stroke-linecap='round'/></svg>">
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+
     <style>
         :root {
             --bg-color: #121212;
@@ -63,6 +66,40 @@
         .btn-union { background-color: var(--accent-purple); color: white; display: none; margin-top: 25px; box-shadow: 0 4px 12px rgba(175, 82, 222, 0.3); }
         .preview-box { max-width: 100%; max-height: 180px; object-fit: contain; border-radius: 8px; margin-top: 12px; border: 1px solid #333; display: none; }
         .file-info { display: none; margin-top: 8px; font-size: 13px; color: var(--text-muted); text-align: left; }
+
+        /* INTERFACCIA DI RITAGLIO (MODALE A TUTTO SCHERMO) */
+        #cropper-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #000000;
+            z-index: 9999;
+            flex-direction: column;
+            justify-content: space-between;
+            padding-bottom: env(safe-area-inset-bottom, 20px);
+            padding-top: env(safe-area-inset-top, 20px);
+        }
+        .cropper-container-box {
+            flex: 1;
+            width: 100%;
+            max-height: 80vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        #cropper-image {
+            max-width: 100%;
+            max-height: 100%;
+            display: block;
+        }
+        .cropper-toolbar {
+            padding: 15px;
+            display: flex;
+            gap: 15px;
+            background: rgba(18, 18, 18, 0.95);
+        }
+        .btn-cancel { background-color: #ff3b30; color: white; }
     </style>
 </head>
 <body>
@@ -112,9 +149,21 @@
         </button>
     </div>
 
+    <div id="cropper-modal">
+        <div class="cropper-container-box">
+            <img id="cropper-image" src="" alt="Sorgente Ritaglio">
+        </div>
+        <div class="cropper-toolbar">
+            <button class="btn btn-cancel" style="flex:1;" onclick="closeCropper()">Annulla</button>
+            <button class="btn" style="background-color: var(--accent-blue); color:white; flex:2;" onclick="confirmCrop()">Conferma Ritaglio</button>
+        </div>
+    </div>
+
     <script>
         let blobs = { FRONT: null, BACK: null };
         let blobUrls = { FRONT: null, BACK: null };
+        let currentCropper = null;
+        let currentSide = null; // Memorizza se stiamo ritagliando 'FRONT' o 'BACK'
 
         function getSanitizedName() {
             const rawName = document.getElementById('name-input').value.trim();
@@ -134,53 +183,89 @@
 
         document.getElementById('name-input').addEventListener('input', updateFilenames);
 
-        function processImage(file, side) {
+        // Intercetta lo scatto e apre l'interfaccia di ritaglio
+        function openCropper(file, side) {
             if (!file) return;
+            currentSide = side;
             const reader = new FileReader();
             reader.onload = function(event) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    let width = img.width; let height = img.height;
-                    const max_size = 1920;
-                    if (width > height) {
-                        if (width > max_size) { height *= max_size / width; width = max_size; }
-                    } else {
-                        if (height > max_size) { width *= max_size / height; height = max_size; }
-                    }
-                    canvas.width = width; canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
+                const modal = document.getElementById('cropper-modal');
+                const image = document.getElementById('cropper-image');
+                
+                image.src = event.target.result;
+                modal.style.display = 'flex';
 
-                    canvas.toBlob(function(blob) {
-                        if (!blob) return;
-                        if (blobUrls[side]) URL.revokeObjectURL(blobUrls[side]);
-
-                        blobs[side] = blob;
-                        blobUrls[side] = URL.createObjectURL(blob);
-
-                        const sideLower = side.toLowerCase();
-                        document.getElementById(`preview-${sideLower}`).src = blobUrls[side];
-                        document.getElementById(`preview-${sideLower}`).style.display = 'inline-block';
-
-                        const info = document.getElementById(`info-${sideLower}`);
-                        info.innerHTML = `File pronto: <strong>${getSanitizedName()}_${getDocType()}_${side}.jpg</strong> (${(blob.size / 1024).toFixed(0)} KB)`;
-                        info.style.display = 'block';
-                        document.getElementById(`download-${sideLower}`).style.display = 'block';
-                        
-                        // Mostra il pulsantone di unione se entrambi i lati sono stati scattati
-                        if (blobs.FRONT && blobs.BACK) {
-                            document.getElementById('btn-combine').style.display = 'block';
-                        }
-                        updateFilenames();
-                    }, 'image/jpeg', 0.8);
-                }
-                img.src = event.target.result;
-            }
+                // Inizializza Cropper.js (Libero movimento touch, senza vincoli rigidi di ratio)
+                currentCropper = new Cropper(image, {
+                    viewMode: 1,
+                    dragMode: 'move',
+                    autoCropArea: 0.85,
+                    restore: false,
+                    guides: true,
+                    center: true,
+                    highlight: false,
+                    cropBoxMovable: true,
+                    cropBoxResizable: true,
+                    toggleDragModeOnDblclick: false,
+                });
+            };
             reader.readAsDataURL(file);
         }
 
-        // Il motore di fusione delle immagini
+        function closeCropper() {
+            document.getElementById('cropper-modal').style.display = 'none';
+            if (currentCropper) {
+                currentCropper.destroy();
+                currentCropper = null;
+            }
+            // Ripulisce gli input di tipo file per permettere di ricaricare la stessa immagine
+            document.getElementById('input-front').value = '';
+            document.getElementById('input-back').value = '';
+        }
+
+        // Esegue il ritaglio, ridimensiona a max 1920px ed elabora il Blob finale
+        function confirmCrop() {
+            if (!currentCropper) return;
+
+            // Chiede a Cropper di calcolare il Canvas finale impostando il limite hardware di 1920px sul lato lungo
+            const options = {};
+            const imageData = currentCropper.getImageData();
+            
+            if (imageData.naturalWidth > imageData.naturalHeight) {
+                options.maxWidth = 1920;
+            } else {
+                options.maxHeight = 1920;
+            }
+
+            const croppedCanvas = currentCropper.getCroppedCanvas(options);
+
+            croppedCanvas.toBlob(function(blob) {
+                if (!blob) return;
+
+                const side = currentSide;
+                if (blobUrls[side]) URL.revokeObjectURL(blobUrls[side]);
+
+                blobs[side] = blob;
+                blobUrls[side] = URL.createObjectURL(blob);
+
+                const sideLower = side.toLowerCase();
+                document.getElementById(`preview-${sideLower}`).src = blobUrls[side];
+                document.getElementById(`preview-${sideLower}`).style.display = 'inline-block';
+
+                const info = document.getElementById(`info-${sideLower}`);
+                info.innerHTML = `File pronto: <strong>${getSanitizedName()}_${getDocType()}_${side}.jpg</strong> (${(blob.size / 1024).toFixed(0)} KB)`;
+                info.style.display = 'block';
+                document.getElementById(`download-${sideLower}`).style.display = 'block';
+                
+                if (blobs.FRONT && blobs.BACK) {
+                    document.getElementById('btn-combine').style.display = 'block';
+                }
+                updateFilenames();
+                closeCropper();
+            }, 'image/jpeg', 0.8);
+        }
+
+        // Il motore di fusione delle immagini (lavora sui blob già ritagliati)
         function downloadCombined() {
             if (!blobs.FRONT || !blobs.BACK) return;
 
@@ -190,24 +275,21 @@
 
             function merge() {
                 const canvas = document.createElement('canvas');
-                // Larghezza pari alla più grande delle due, altezza pari alla somma + margine di separazione
                 const w = Math.max(imgFront.width, imgBack.width);
-                const gap = 30;
+                const gap = 35;
                 const h = imgFront.height + imgBack.height + gap;
 
                 canvas.width = w;
                 canvas.height = h;
                 const ctx = canvas.getContext('2d');
 
-                // Sfondo neutro chiaro per far risaltare il taglio delle tessere
+                // Sfondo neutro chiaro per staccare i bordi delle tessere
                 ctx.fillStyle = '#f5f5f7';
                 ctx.fillRect(0, 0, w, h);
 
-                // Centra e disegna il Fronte
                 const xFront = (w - imgFront.width) / 2;
                 ctx.drawImage(imgFront, xFront, 0);
 
-                // Centra e disegna il Retro sotto il fronte
                 const xBack = (w - imgBack.width) / 2;
                 ctx.drawImage(imgBack, xBack, imgFront.height + gap);
 
@@ -229,8 +311,9 @@
             imgBack.src = blobUrls.BACK;
         }
 
-        document.getElementById('input-front').addEventListener('change', (e) => processImage(e.target.files[0], 'FRONT'));
-        document.getElementById('input-back').addEventListener('change', (e) => processImage(e.target.files[0], 'BACK'));
+        // Event Listeners legati ora all'apertura del Cropper modale
+        document.getElementById('input-front').addEventListener('change', (e) => openCropper(e.target.files[0], 'FRONT'));
+        document.getElementById('input-back').addEventListener('change', (e) => openCropper(e.target.files[0], 'BACK'));
 
         // Registrazione Service Worker per il funzionamento Offline
         if ('serviceWorker' in navigator) {
