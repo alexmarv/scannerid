@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Scanner ID</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --accent-blue: #007aff;
+            --accent-green: #34c759;
+            --text-main: #ffffff;
+            --text-muted: #8e8e93;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 90vh;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            box-sizing: border-box;
+        }
+
+        h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            box-sizing: border-box;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-blue);
+            color: white;
+            margin-bottom: 15px;
+        }
+
+        .btn-success {
+            background-color: var(--accent-green);
+            color: white;
+            display: none;
+            margin-top: 15px;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        #preview {
+            max-width: 100%;
+            max-height: 300px;
+            object-fit: contain;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 1px solid #333;
+            display: none;
+        }
+
+        .file-info {
+            display: none;
+            margin-top: 10px;
+            font-size: 14px;
+            color: var(--accent-green);
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Scanner ID</h1>
+        <p class="subtitle">Acquisizione ottimizzata per CIE e Tessera Sanitaria</p>
+
+        <!-- Input nascosto che invoca la fotocamera nativa dell'iPhone -->
+        <input type="file" accept="image/*" capture="environment" id="camera-input" style="display:none;">
+        
+        <button class="btn btn-primary" onclick="document.getElementById('camera-input').click()">
+            Scatta Foto Documento
+        </button>
+
+        <img id="preview" alt="Anteprima Documento">
+        <div id="file-info" class="file-info"></div>
+
+        <a id="download-link" class="btn btn-success">Salva in Galleria / File</a>
+    </div>
+
+    <script>
+        const input = document.getElementById('camera-input');
+        const preview = document.getElementById('preview');
+        const fileInfo = document.getElementById('file-info');
+        const downloadLink = document.getElementById('download-link');
+
+        input.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+
+                    // Ridimensionamento sul lato lungo a 1920px (perfetto per nitidezza e peso)
+                    const max_size = 1920;
+                    if (width > height) {
+                        if (width > max_size) { height *= max_size / width; width = max_size; }
+                    } else {
+                        if (height > max_size) { width *= max_size / height; height = max_size; }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    // Elaborazione nativa in JPEG con compressione all'80%
+                    canvas.toBlob(function(blob) {
+                        if (!blob) return;
+
+                        // Rilascia la memoria del vecchio URL se esistente
+                        if (preview.src.startsWith('blob:')) {
+                            URL.revokeObjectURL(preview.src);
+                        }
+
+                        const blobUrl = URL.createObjectURL(blob);
+                        
+                        // Aggiorna l'anteprima
+                        preview.src = blobUrl;
+                        preview.style.display = 'inline-block';
+
+                        // Mostra informazioni sul file generato
+                        const sizeInKB = (blob.size / 1024).toFixed(0);
+                        fileInfo.textContent = `Pronto! Dimensione: ${sizeInKB} KB (Ottimizzato)`;
+                        fileInfo.style.display = 'block';
+
+                        // Configura il pulsante di download locale
+                        const now = new Date();
+                        const dateStr = now.toISOString().slice(0,10);
+                        
+                        downloadLink.href = blobUrl;
+                        downloadLink.download = `ScannerID_${dateStr}.jpg`;
+                        downloadLink.style.display = 'block';
+
+                    }, 'image/jpeg', 0.8);
+                }
+                img.src = event.target.result;
+            }
+            reader.readAsDataURL(file);
+        });
+    </script>
+</body>
+</html>
